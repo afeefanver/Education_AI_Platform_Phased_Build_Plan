@@ -10,9 +10,12 @@ from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_asyn
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "../packages/shared-models/src")))
 
+from dotenv import load_dotenv
 from passlib.context import CryptContext  # noqa: E402
 
 from shared_models.models import Organization, Student, Teacher, User  # noqa: E402
+
+load_dotenv(os.path.abspath(os.path.join(os.path.dirname(__file__), "../.env")))
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 

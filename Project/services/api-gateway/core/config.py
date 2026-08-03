@@ -1,10 +1,18 @@
 """Application configuration from environment variables."""
 
+from pathlib import Path
+
 from pydantic_settings import BaseSettings, SettingsConfigDict
+
+_ROOT_ENV = Path(__file__).resolve().parents[3] / ".env"
 
 
 class Settings(BaseSettings):
-    model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8", extra="ignore")
+    model_config = SettingsConfigDict(
+        env_file=(_ROOT_ENV, ".env"),
+        env_file_encoding="utf-8",
+        extra="ignore",
+    )
 
     database_url: str = "postgresql+asyncpg://edu:edu_secret@localhost:5432/edu_platform"
     redis_url: str = "redis://localhost:6379/0"
