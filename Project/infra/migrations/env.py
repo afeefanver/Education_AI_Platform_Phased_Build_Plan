@@ -3,6 +3,7 @@ import os
 import sys
 from logging.config import fileConfig
 
+from dotenv import load_dotenv
 from alembic import context
 from sqlalchemy import pool
 from sqlalchemy.engine import Connection
@@ -12,6 +13,8 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "../.
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "../../packages/shared-models/src")))
 
 from shared_models.models import Base  # noqa: E402
+
+load_dotenv(os.path.abspath(os.path.join(os.path.dirname(__file__), "../../.env")))
 
 config = context.config
 if config.config_file_name is not None:
