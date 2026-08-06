@@ -66,3 +66,118 @@ class MeResponse(BaseModel):
 
 class ErrorResponse(BaseModel):
     detail: str
+
+
+# Phase 2: Core Learning Loop Schemas
+
+class NoteType(str, Enum):
+    DETAILED = "detailed"
+    EXAM = "exam"
+    REVISION = "revision"
+    LAST_MINUTE = "last_minute"
+    CHEAT_SHEET = "cheat_sheet"
+
+
+class TutorMode(str, Enum):
+    BEGINNER = "beginner"
+    STANDARD = "standard"
+    INTERVIEW = "interview"
+
+
+class QuizType(str, Enum):
+    MCQ = "mcq"
+    TRUE_FALSE = "true_false"
+    FILL_BLANK = "fill_blank"
+
+
+class SubjectCreate(BaseModel):
+    name: str
+    class_level: str
+
+
+class SubjectResponse(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: UUID
+    org_id: UUID
+    name: str
+    class_level: str
+
+
+class SyllabusUnitResponse(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: UUID
+    subject_id: UUID
+    unit_name: str
+    order_index: int
+
+
+class NoteGenerateRequest(BaseModel):
+    subject_id: UUID
+    unit_id: UUID
+    type: NoteType = NoteType.DETAILED
+
+
+class NoteResponse(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: UUID
+    subject_id: UUID
+    unit_id: UUID
+    type: NoteType
+    content: str
+    generated_at: datetime
+
+
+class TutorSessionCreate(BaseModel):
+    subject_id: UUID
+    mode: TutorMode = TutorMode.STANDARD
+
+
+class TutorSessionResponse(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: UUID
+    student_id: UUID
+    subject_id: UUID
+    mode: TutorMode
+    created_at: datetime
+
+
+class TutorMessageRequest(BaseModel):
+    session_id: UUID
+    message: str
+
+
+class TutorResponse(BaseModel):
+    reply: str
+    sources: list[str] = Field(default_factory=list)
+
+
+class QuizGenerateRequest(BaseModel):
+    subject_id: UUID
+    unit_id: UUID
+    count: int = Field(default=5, ge=1, le=20)
+    difficulty: str = "medium"
+
+
+class QuizQuestionSchema(BaseModel):
+    id: UUID
+    type: QuizType
+    question_text: str
+    options: list[str] | None = None
+    difficulty: str
+
+
+class QuizSubmitRequest(BaseModel):
+    unit_id: UUID
+    answers: dict[str, str]  # question_id -> student answer
+
+
+class QuizResultResponse(BaseModel):
+    score: int
+    total: int
+    percentage: float
+    breakdown: list[dict]
+
