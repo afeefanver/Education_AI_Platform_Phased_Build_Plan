@@ -3,7 +3,7 @@
 from pathlib import Path
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
-_ROOT_ENV = Path(__file__).resolve().parents[4] / ".env"
+_ROOT_ENV = Path(__file__).resolve().parents[3] / ".env"
 
 
 class Settings(BaseSettings):
