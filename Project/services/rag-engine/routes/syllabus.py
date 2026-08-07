@@ -44,10 +44,15 @@ async def list_subjects(
     return [SubjectResponse.model_validate(s) for s in subjects]
 
 
+import io
+import pypdf
+
+
 @router.post("/upload")
 async def upload_syllabus(
     subject_id: uuid.UUID = Form(...),
-    units_raw: str = Form(..., description="Comma or newline separated list of units"),
+    units_raw: str | None = Form(None, description="Comma or newline separated list of units (if no PDF file)"),
+    file: UploadFile | None = File(None, description="Syllabus PDF file"),
     current: CurrentUser = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
@@ -57,9 +62,36 @@ async def upload_syllabus(
     if not subject:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Subject not found")
 
-    unit_names = [u.strip() for u in units_raw.replace("\n", ",").split(",") if u.strip()]
+    extracted_text = ""
+    file_name = "raw_text_input"
+
+    if file and file.filename:
+        file_name = file.filename
+        content_bytes = await file.read()
+        try:
+            reader = pypdf.PdfReader(io.BytesIO(content_bytes))
+            text_pages = [page.extract_text() for page in reader.pages if page.extract_text()]
+            extracted_text = "\n".join(text_pages)
+        except Exception as e:
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=f"Failed to parse PDF file: {e}")
+
+    if not extracted_text and units_raw:
+        extracted_text = units_raw
+
+    if not extracted_text:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Please upload a PDF file or enter units text")
+
+    # Extract unit names from text
+    lines = [line.strip() for line in extracted_text.replace("\r", "").split("\n") if line.strip()]
+    unit_names = []
+    for line in lines:
+        if "," in line and not line.lower().startswith("unit"):
+            unit_names.extend([u.strip() for u in line.split(",") if u.strip()])
+        else:
+            unit_names.append(line)
+
     if not unit_names:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="No valid unit names provided")
+        unit_names = ["Unit 1: Overview"]
 
     created_units = []
     vector_texts = []
