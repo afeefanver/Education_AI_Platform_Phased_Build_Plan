@@ -26,8 +26,12 @@ class Settings(BaseSettings):
     api_gateway_port: int = 8000
     rate_limit_per_minute: int = 60
 
+    rag_engine_url: str = "http://localhost:8001"
+    quiz_engine_url: str = "http://localhost:8002"
+
     credits_enabled: bool = True
     default_org_credits: int = 1000
 
 
 settings = Settings()
+
